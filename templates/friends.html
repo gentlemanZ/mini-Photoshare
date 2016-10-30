@@ -1,0 +1,49 @@
+<!-- author ben lawson (balawson@bu.edu) -->
+<!doctype html>
+{% if message %}
+  <h4>{{message}}!</h4>
+{% endif %}
+<title>Friend List</title>
+{% if name %}
+  <h1>Hello {{ name }}!</h1>
+{% endif %}
+
+{% if Users %}
+<h2>Here's ALL users</h2>
+    <ul>
+    {% for user in Users %}
+    	<li>User id is: {{user[0]}} User First Name is: {{user[1]}} User Last Nmae is: {{user[2]}}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if searchResult %}
+<h2>Here's the result of your search</h2>
+    <ul>
+    {% for user in searchResult %}
+    	<li>User id is: {{user[0]}} User First Name is: {{user[1]}} User Last Nmae is: {{user[2]}}</li>
+    	<a href='/friends/addingFriend?info={{user[0]}}'>add him as a friend!</a>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% if Friends %}
+<h2>Here are all of your friends:</h2>
+    <ul>
+    {% for user in Friends %}
+    	<li>User id is: {{user[0]}} User First Name is: {{user[1]}} User Last Nmae is: {{user[2]}}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+
+ <form method="post" action="{{ url_for('searchFriends') }}">
+                <label for="First Name">Enter the First Name:</label>
+                <input type="firstName" name="firstName" /><br />
+                <input type="submit" />
+</form> 
+
+
+
+
+
+
