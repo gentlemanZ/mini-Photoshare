@@ -258,6 +258,40 @@ def likePhoto():
     photos = getUsersPhotos(uid)
     return render_template('profile.html', name=flask_login.current_user.id, message="Here's your profile",photos = photos)
 
+@app.route('/photos/tagPhoto', methods=['GET'])
+@flask_login.login_required
+def tagPhoto():
+    photo_id = request.args['info']
+    return render_template('taggingPhoto.html', name=flask_login.current_user.id, message="Please tag this photo",photo_id=photo_id)
+
+@app.route('/photos/tagPhoto', methods=['POST'])
+@flask_login.login_required
+def taggingPhoto():
+    photo_id = request.form.get('photo_id')
+    tag_txt = request.form.get('tag')
+    #insert these two into tag table
+    TagPhotoWithPhotoId(photo_id,tag_txt)
+    uid = getUserIdFromEmail(flask_login.current_user.id)
+    photos = getUsersPhotos(uid)
+    return render_template('profile.html', name=flask_login.current_user.id, message="Here's your profile",photos = photos)
+
+@app.route('/photos/commentPhoto', methods=['GET'])
+@flask_login.login_required
+def commentPhoto():
+    photo_id = request.args['info']
+    return render_template('commentingPhoto.html', name=flask_login.current_user.id, message="Please tag this photo",photo_id=photo_id)
+
+@app.route('/photos/commentPhoto', methods=['POST'])
+@flask_login.login_required
+def commentingPhoto():
+    photo_id = request.form.get('photo_id')
+    tag_txt = request.form.get('comment')
+    #insert these two into tag table
+    CommentPhotoWithPhotoId(photo_id,tag_txt)
+    uid = getUserIdFromEmail(flask_login.current_user.id)
+    photos = getUsersPhotos(uid)
+    return render_template('profile.html', name=flask_login.current_user.id, message="Here's your profile",photos = photos)
+
 
 #helpper function:
 def getUsersFromFirstNmae(firstName):
@@ -284,6 +318,17 @@ def getUsersPhotos(uid):
     cursor = conn.cursor()
     cursor.execute("SELECT imgdata, picture_id, Album_Name,NumberOfLike FROM Pictures WHERE user_id = '{0}'".format(uid))
     return cursor.fetchall() #NOTE list of tuples, [(imgdata, pid), ...]
+
+def TagPhotoWithPhotoId(photo_id,tag_txt):
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO tags (picture_id,tag_txt) VALUES ('{0}', '{1}')".format(photo_id,tag_txt))
+    conn.commit()
+
+def CommentPhotoWithPhotoId(photo_id,comment_txt):
+    uid = getUserIdFromEmail(flask_login.current_user.id)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO comments (picture_id,user_id,comment_txt) VALUES ('{0}', '{1}','{2}')".format(photo_id,uid,comment_txt))
+    conn.commit()
 
 
 #default page  
