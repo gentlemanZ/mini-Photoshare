@@ -13,7 +13,9 @@
 <h2>Here's your photos</h2>
     <ul>
     {% for photo in photos %}
-        <li><img src='data:image/png;base64, {{photo[0]}}'/></li>
+        <li><img src='data:image/png;base64 , {{photo[0]}}' height="100" width="100"/></li>
+        <a href='/photos/Like?info={{photo[1]}}'>Like it!</a>
+        <li>{{photo[1]}},{{photo[2]}},{{photo[3]}}</li>
     {% endfor %}
     </ul>
 {% endif %}

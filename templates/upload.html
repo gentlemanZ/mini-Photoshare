@@ -5,7 +5,7 @@
         <div class="title">
             <h1>Upload a photo to Photoshare</h1>
         </div>
-            <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+            <form method="post" enctype="multipart/form-data" action="{{url_for('upload')}}">
                 <label for="album">Choose an album for your photo</label>
                 <input type="text" name="album" required='true' /><br /> 
                 {% if albums %}
@@ -18,8 +18,6 @@
                 {% endif %}
                 <label for="photo">Select photo:</label>
                 <input type="file" name="photo" required='true' /><br />
-                <label for="caption">Please caption:</label>
-                <input type="text" name="caption" required='true' /><br />
                 <input type="submit" value="Upload" />
             </form>
     </body>

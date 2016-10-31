@@ -168,7 +168,9 @@ def isEmailUnique(email):
 @app.route('/profile')
 @flask_login.login_required
 def protected():
-    return render_template('profile.html', name=flask_login.current_user.id, message="Here's your profile")
+    uid = getUserIdFromEmail(flask_login.current_user.id)
+    photos = getUsersPhotos(uid)
+    return render_template('profile.html', name=flask_login.current_user.id, message="Here's your profile",photos = photos)
 
 #begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML 
@@ -178,26 +180,23 @@ def allowed_file(filename):
 
 @app.route('/upload', methods=['GET', 'POST'])
 @flask_login.login_required
-def upload_file():
+def upload():
     if request.method == 'POST':
         uid = getUserIdFromEmail(flask_login.current_user.id)
-        imgfile = request.files['file']
-	photo_data = base64.standard_b64encode(imgfile.read())
+        #lname = getUserNameFromId(uid)
+        imgfile = request.files['photo']
+        #caption = request.form.get('caption')
+        #print caption
+        album = request.form.get('album')
+        photo_data = base64.standard_b64encode(imgfile.read())
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO Pictures (imgdata, user_id) VALUES ('{0}', '{1}' )".format(photo_data,uid))
-        conn.commit()
-	return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid) )
-    #The method is GET so we return a  HTML form to upload the a photo.
-    return '''
-        <!doctype html>
-        <title>Upload new Picture</title>
-        <h1>Upload new Picture</h1>
-        <form action="" method=post enctype=multipart/form-data>
-        <p><input type=file name=file>
-        <input type=submit value=Upload>
-        </form></br>
-	<a href='/'>Home</a>
-        '''
+        cursor.execute("INSERT INTO Pictures (imgdata,user_id,Album_Name) VALUES ('{0}', '{1}', '{2}')".format(photo_data,uid,album))
+        conn.commit()       
+        return render_template('profile.html', name=flask_login.current_user.id, message="Photo uploaded")
+    # The method is GET so we return a  HTML form to upload the a photo.
+    else:
+        uid = getUserIdFromEmail(flask_login.current_user.id)
+        return render_template('upload.html', albums = getAlbumList(uid))
 #end photo uploading code 
 
 @app.route('/friends', methods=['GET'])
@@ -243,7 +242,21 @@ def creatingAlbum():
     else:
         return render_template('createAlbum.html', name=flask_login.current_user.id, message='creating new album')
 
+@app.route('/photos/Like', methods=['GET'])
+@flask_login.login_required
+def likePhoto():
+    photo_id = request.args['info']
+    cursor = conn.cursor()
+    cursor.execute ("""
+   UPDATE Pictures
+   SET NumberOfLike = NumberOfLike +1
+   WHERE picture_id =%s
+""", (photo_id))
+    conn.commit()
 
+    uid = getUserIdFromEmail(flask_login.current_user.id)
+    photos = getUsersPhotos(uid)
+    return render_template('profile.html', name=flask_login.current_user.id, message="Here's your profile",photos = photos)
 
 
 #helpper function:
@@ -261,6 +274,16 @@ def getFriendList(uid):
     cursor = conn.cursor()
     cursor.execute("SELECT Users.user_id,Users.firstName,Users.lastName  FROM Users,friends WHERE friends.user_id = {0} And Users.user_id = friends.friend_id".format(uid))
     return cursor.fetchall()
+
+def getAlbumList(uid):
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, creatingDate from Albums WHERE user_id = '{0}'".format(uid))
+    return cursor.fetchall()
+
+def getUsersPhotos(uid):
+    cursor = conn.cursor()
+    cursor.execute("SELECT imgdata, picture_id, Album_Name,NumberOfLike FROM Pictures WHERE user_id = '{0}'".format(uid))
+    return cursor.fetchall() #NOTE list of tuples, [(imgdata, pid), ...]
 
 
 #default page  
